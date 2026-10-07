@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: pwd
+      POSTGRES_DB: prestamos
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d prestamos"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  
+  app:
+    build: .
+    ports:
+      - "9000:9000"
+    environment:
+      PRESTAMOS_DB_URL: postgresql://admin:pwd@db:5432/prestamos
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
